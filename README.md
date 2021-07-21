@@ -1,5 +1,7 @@
 # dockersave
 
+Copyright (c) 2019-2021 [Antmicro](https://www.antmicro.com)
+
 `dockersave` is a tool for downloading Docker images from a registry to a tar file.
 It DOES NOT depend on Docker, therefore it is suitable for use in minimal systems where Docker would be considered an unnecessary dependency.
 
