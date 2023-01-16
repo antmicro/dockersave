@@ -1,0 +1,25 @@
+on:
+  push:
+
+jobs:
+  build-static:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install build tools
+      run: |
+        sudo apt -qqy update && sudo apt -qqy install patchelf build-essential python3-pip git zlib1g-dev python3-setuptools python3-venv python3-wheel
+        git clone https://github.com/pyinstaller/pyinstaller.git
+        cd pyinstaller/bootloader && CC="gcc -no-pie" python3 waf configure all && cd -
+        cd pyinstaller && sudo pip3 install . && cd -
+        sudo pip3 install staticx
+    - name: Install dependencies
+      run: python setup.py egg_info && pip3 install -r *.egg-info/requires.txt
+    - name: Build static binary
+      run: |
+        pyinstaller -F dockersave/cli.py 
+        staticx dist/cli dockersave-static 
+    - uses: actions/upload-artifact@v3
+      with:
+        name: dockersave-static
+        path: dockersave-static
