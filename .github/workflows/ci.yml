@@ -19,7 +19,8 @@ jobs:
       run: |
         echo "__version__ = \"$(git rev-parse HEAD)\"" > dockersave/_version.py
         pyinstaller -F dockersave/cli.py 
-        staticx dist/cli dockersave-static 
+        mv dist/cli dist/dockersave
+        staticx dist/dockersave dockersave-static 
     - uses: actions/upload-artifact@v3
       with:
         name: dockersave-static
