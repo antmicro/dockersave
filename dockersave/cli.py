@@ -1,4 +1,5 @@
 import argparse, sys, getpass
+from dockersave._version import __version__
 from dockersave import Image, lexer
 from requests.exceptions import HTTPError
 from dockersave.exceptions import UnsupportedManifest
@@ -71,6 +72,7 @@ def get_parser():
     parser.add_argument('--metadata', action='store_true')
     parser.add_argument('--sha', action='store_true')
     parser.add_argument('--tags', action='store_true')
+    parser.add_argument('--version', action='version', version=__version__)
     parser.set_defaults(func=download)
     
     return parser
