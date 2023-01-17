@@ -17,7 +17,8 @@ jobs:
       run: python setup.py egg_info && pip3 install -r *.egg-info/requires.txt
     - name: Build static binary
       run: |
-        echo "__version__ = \"$(git rev-parse HEAD)\"" > dockersave/_version.py
+        truncate -s-1 dockersave/_version.py
+        echo -n " + \"-$(git rev-parse HEAD)\"" >> dockersave/_version.py
         pyinstaller -F dockersave/cli.py 
         mv dist/cli dist/dockersave
         staticx dist/dockersave dockersave-static 
