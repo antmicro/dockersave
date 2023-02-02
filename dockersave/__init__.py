@@ -58,22 +58,35 @@ def get_token(image, user=None, password=None, auth_endpoint="https://auth.docke
 def get_manifest(image, tag, token, registry_url):
     request_url = "{}/v2/{}/manifests/{}".format(registry_url, image, tag)
 
-    supported_manifest = 'application/vnd.docker.distribution.manifest.v2+json'
+    supported_fat_manifests = [
+            'application/vnd.docker.distribution.manifest.list.v2+json',
+            'application/vnd.oci.image.index.v1+json',
+            ]
 
-    headers = {'Authorization':'Bearer {}'.format(token), 'Accept':supported_manifest}
+    supported_manifests = [
+            'application/vnd.docker.distribution.manifest.v2+json',
+            'application/vnd.oci.image.manifest.v1+json',
+            ]
 
-    r = requests.get(request_url, headers=headers)
+    for manifest_type in supported_manifests+supported_fat_manifests:
+        r = requests.get(
+                request_url, 
+                headers={
+                    'Authorization':'Bearer {}'.format(token), 
+                    'Accept': manifest_type
+                    }
+                )
+
+        # Image does not exist or unsupported manifest type.
+        if r.status_code == 404:
+            continue
+        elif r.headers["content-type"] in supported_fat_manifests:
+            return get_manifest(image, r.json()['manifests'][0]["digest"], token, registry_url)
+        else:
+            break
+
     r.raise_for_status()
-
-    try:
-        if r.headers["Content-Type"] != supported_manifest:
-            raise UnsupportedManifest
-    except KeyError:
-        raise UnsupportedManifest
-
     return r
-
-
 
 def get_layers_digests(manifest_json):
     digests = []
