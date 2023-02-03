@@ -64,26 +64,22 @@ def get_manifest(image, tag, token, registry_url):
             ]
 
     supported_manifests = [
-            'application/vnd.docker.distribution.manifest.v2+json',
             'application/vnd.oci.image.manifest.v1+json',
+            'application/vnd.docker.distribution.manifest.v2+json',
+            'application/vnd.docker.distribution.manifest.v1+prettyjws',
+            'application/vnd.docker.distribution.manifest.v1+json',
             ]
 
-    for manifest_type in supported_manifests+supported_fat_manifests:
-        r = requests.get(
-                request_url, 
-                headers={
-                    'Authorization':'Bearer {}'.format(token), 
-                    'Accept': manifest_type
-                    }
-                )
+    r = requests.get(
+            request_url, 
+            headers={
+                'Authorization':'Bearer {}'.format(token), 
+                'Accept': ", ".join(supported_manifests+supported_fat_manifests)
+                }
+            )
 
-        # Image does not exist or unsupported manifest type.
-        if r.status_code == 404:
-            continue
-        elif r.headers["content-type"] in supported_fat_manifests:
-            return get_manifest(image, r.json()['manifests'][0]["digest"], token, registry_url)
-        else:
-            break
+    if r.headers["content-type"] in supported_fat_manifests:
+        return get_manifest(image, r.json()['manifests'][0]["digest"], token, registry_url)
 
     r.raise_for_status()
     return r
