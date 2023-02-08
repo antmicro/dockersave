@@ -55,7 +55,7 @@ def get_token(image, user=None, password=None, auth_endpoint="https://auth.docke
 
     return r.json()['token']
 
-def get_manifest(image, tag, token, registry_url):
+def get_manifest(image, tag, token, registry_url, arch="amd64"):
     request_url = "{}/v2/{}/manifests/{}".format(registry_url, image, tag)
 
     supported_fat_manifests = [
@@ -79,7 +79,12 @@ def get_manifest(image, tag, token, registry_url):
             )
 
     if r.headers["content-type"] in supported_fat_manifests:
-        return get_manifest(image, r.json()['manifests'][0]["digest"], token, registry_url)
+        return get_manifest(
+                image, 
+                next(x['digest'] for x in r.json()['manifests'] if x['platform']['architecture'] == arch), 
+                token, 
+                registry_url
+                )
 
     r.raise_for_status()
     return r
@@ -155,7 +160,7 @@ def lexer_wrapper(string, user=None, password=None, secure=True):
     return img
 
 class Image:
-    def __init__(self, image, tag, user=None, password=None, other_tags=False, registry_url="https://registry-1.docker.io"):
+    def __init__(self, image, tag, user=None, password=None, other_tags=False, registry_url="https://registry-1.docker.io", arch="amd64"):
         self.image = image
         self.tag = tag
         self.registry_url = registry_url
@@ -181,7 +186,7 @@ class Image:
         else:
             self.taglist = None
 
-        self.manifest_response = get_manifest(image, tag, self.token, self.registry_url)
+        self.manifest_response = get_manifest(image, tag, self.token, self.registry_url, arch)
 
         self.manifest = self.manifest_response.json()
 

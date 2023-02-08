@@ -32,7 +32,9 @@ def download(args):
                 user=args.user, 
                 password=args.password,
                 other_tags=args.tags,
-                registry_url=l['registry_url'])
+                registry_url=l['registry_url'],
+                arch=args.arch
+                )
 
         if args.tags:
             from pprint import PrettyPrinter as pp
@@ -72,6 +74,7 @@ def get_parser():
     parser.add_argument('--metadata', action='store_true')
     parser.add_argument('--sha', action='store_true')
     parser.add_argument('--tags', action='store_true')
+    parser.add_argument('--arch', type=str, default="amd64")
     parser.add_argument('--version', action='version', version=__version__)
     parser.set_defaults(func=download)
     
