@@ -26,3 +26,14 @@ jobs:
       with:
         name: dockersave-static
         path: dockersave-static
+  upload-release:
+    runs-on: ubuntu-22.04
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build-static
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: dockersave-static
+      - run: ls -alh
+      - run: chmod +x dockersave-static && mv dockersave-static dockersave
+      - run: ./dockersave --version
