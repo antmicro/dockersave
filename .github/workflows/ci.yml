@@ -36,3 +36,9 @@ jobs:
       - run: ls -alh
       - run: chmod +x dockersave-static && mv dockersave-static dockersave
       - run: ./dockersave --version
+      - name: Publish
+        uses: "marvinpinto/action-automatic-releases@919008cf3f741b179569b7a6fb4d8860689ab7f0"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: dockersave 
