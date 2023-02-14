@@ -17,8 +17,7 @@ jobs:
       run: python setup.py egg_info && pip3 install -r *.egg-info/requires.txt
     - name: Build static binary
       run: |
-        truncate -s-1 dockersave/_version.py
-        echo -n " + \"-$(git rev-parse HEAD)\"" >> dockersave/_version.py
+        T="$(git describe --exact-match --tags 2> /dev/null | cut -c2-)" bash -c 'echo -n "__version__ = \"${T:-$(git rev-parse HEAD)}\""' > dockersave/_version.py
         pyinstaller -F dockersave/cli.py 
         mv dist/cli dist/dockersave
         staticx dist/dockersave dockersave-static 
