@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import requests, os, json, hashlib, tarfile, shutil, subprocess
-from os.path import join
+from os.path import join, exists
 from requests.auth import HTTPBasicAuth
 from dockersave.exceptions import UnsupportedManifest
+import time
 
 json_template = {
         "id": "",
@@ -106,17 +107,34 @@ def get_blob(image, digest, token, registry_url):
 
     return r
 
-def save_blob_chunked(image, digest, filename, token, registry_url):
+def save_blob_chunked(image, digest, filename, token, registry_url, content_range=0, retries=0):
     request_url = "{}/v2/{}/blobs/{}".format(registry_url, image, digest)
+    if retries > 20:
+        raise ConnectionError("Too many connection retries")
 
-    headers = {'Authorization':'Bearer {}'.format(token)}
+    i = content_range
+    headers = {
+        'Authorization':'Bearer {}'.format(token),
+        'Range': 'bytes={}-'.format(content_range),
+    }
 
     with requests.get(request_url, headers = headers, stream=True) as r:
         r.raise_for_status()
-        with open(filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+        if exists(filename) and content_range == 0:
+            mode = 'wb'
+        else:
+            mode = 'ab'
+        with open(filename, mode) as f:
+            try:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        i += len(chunk)
+                        f.write(chunk)
+            except requests.models.ProtocolError:
+                time.sleep(5)
+                retries += 1
+                save_blob_chunked(image, digest, filename, token, registry_url, i, retries)
+                return
 
 def sha256(string):
     return hashlib.sha256(string.encode()).hexdigest()
