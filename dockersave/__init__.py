@@ -4,6 +4,7 @@ import requests, os, json, hashlib, tarfile, shutil, subprocess
 from os.path import join, exists
 from requests.auth import HTTPBasicAuth
 from dockersave.exceptions import UnsupportedManifest
+from sys import exit as sys_exit
 import time
 
 json_template = {
@@ -80,12 +81,16 @@ def get_manifest(image, tag, token, registry_url, arch="amd64"):
             )
 
     if r.headers["content-type"] in supported_fat_manifests:
-        return get_manifest(
-                image, 
-                next(x['digest'] for x in r.json()['manifests'] if x['platform']['architecture'] == arch), 
-                token, 
-                registry_url
-                )
+        try:
+            return get_manifest(
+                    image, 
+                    next(x['digest'] for x in r.json()['manifests'] if x['platform']['architecture'] == arch), 
+                    token, 
+                    registry_url
+                    )
+        except StopIteration:
+            print(f"arch {arch} not found")
+            sys_exit(1)
 
     r.raise_for_status()
     return r
