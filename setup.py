@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-        name="docker-image-save",
+        name="dockersave",
         version="0.1",
         author="Adam Olech",
         author_email="aolech@antmicro.com",
