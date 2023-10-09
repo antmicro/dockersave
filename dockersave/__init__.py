@@ -130,7 +130,7 @@ def save_blob_chunked(image, digest, filename, token, registry_url, content_rang
                     if chunk:
                         i += len(chunk)
                         f.write(chunk)
-            except requests.models.ProtocolError:
+            except (requests.models.ProtocolError, requests.exceptions.ChunkedEncodingError):
                 time.sleep(5)
                 retries += 1
                 save_blob_chunked(image, digest, filename, token, registry_url, i, retries)
