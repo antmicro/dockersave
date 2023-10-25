@@ -277,7 +277,12 @@ class Image:
             if gunzip:
                 gzpath = join(inner_dir, "layer.tar.gz")
                 os.rename(tarpath, gzpath)
-                subprocess.run("gunzip {}".format(gzpath), shell=True, check=True)
+                if shutil.which("pigz") is not None:
+                    cmd = "pigz -d"
+                else:
+                    cmd = "gunzip"
+
+                subprocess.run(f"{cmd} {gzpath}", shell=True, check=True)
 
 
 
