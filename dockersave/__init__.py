@@ -75,7 +75,7 @@ def get_manifest(image, tag, token, registry_url, arch="amd64"):
             request_url, 
             headers={
                 'Authorization':'Bearer {}'.format(token), 
-                'Accept': ", ".join(supported_manifests+supported_fat_manifests)
+                'Accept': ", ".join(supported_fat_manifests+supported_manifests)
                 }
             )
 
@@ -172,9 +172,9 @@ def lexer(string, secure=True):
 
     return tokens
 
-def lexer_wrapper(string, user=None, password=None, secure=True):
+def lexer_wrapper(string, user=None, password=None, secure=True, arch="amd64"):
     l = lexer(string)
-    img = Image(l['image'], l['tag'], registry_url=l['registry_url'], user=user, password=password)
+    img = Image(l['image'], l['tag'], registry_url=l['registry_url'], user=user, password=password, arch=arch)
     return img
 
 class Image:
