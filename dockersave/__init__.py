@@ -177,12 +177,15 @@ def lexer_wrapper(string, user=None, password=None, secure=True, arch="amd64"):
     img = Image(l['image'], l['tag'], registry_url=l['registry_url'], user=user, password=password, arch=arch)
     return img
 
+def flatten_container_uri(image, tag):
+    return "{}:{}".format(image, tag).replace("/","-").replace(":","_")
+
 class Image:
     def __init__(self, image, tag, user=None, password=None, other_tags=False, registry_url="https://registry-1.docker.io", arch="amd64"):
         self.image = image
         self.tag = tag
         self.registry_url = registry_url
-        self.flat = "{}:{}".format(self.image, self.tag).replace("/","-").replace(":","_")
+        self.flat = flatten_container_uri(image, tag)
 
         self.user = user
         self.password = password
